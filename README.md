@@ -8,7 +8,7 @@ The image relies on the following environment variables for configuration:
 - **`CERTBOT_EMAIL`**: The email address for Let’s Encrypt to send important notifications regarding the certificates. This email will also be used for expiration warnings and other important updates. Make sure to provide a valid email address.
 - **`DOMAIN_NAME`**: The domain for which SSL/TLS certificates will be generated. This domain must point to the server where the container is running, as Let's Encrypt uses domain validation.
 
-If `CERTBOT_EMAIL` is not set, the container will serve HTTP traffic on port 80.
+If `CERTBOT_EMAIL` is not set, the container will not try to obtain an SSL certificate and only serve HTTP traffic on port 80.
 
 ## Configuration
 
@@ -30,6 +30,17 @@ docker run -d \
 ```
 
 This command runs the container, exposing both HTTP (port 80) and HTTPS (port 443) for the server.
+
+### Custom image
+
+You can use `nginx-letsencrypt` as base image for your custom docker image.
+
+```
+FROM nginx-letsencrypt
+
+COPY ./.docker/nginx.conf.template /etc/nginx/templates/default.conf.template
+# Rest of the Dockerfile...
+```
 
 ## SSL Certificate
 The container will request an SSL certificate, a minute after it's started. This gives nginx enough time to boot. It's recommended that you have DNS properly set up before starting the container.
