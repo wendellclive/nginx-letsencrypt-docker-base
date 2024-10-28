@@ -18,6 +18,10 @@ If you need to customize the nginx.conf file, overwrite `/etc/nginx/templates/de
 
 Certbot is able to modify simple nginx configurations to serve HTTPS instead of HTTP. For complex configurations you'll need to replace the configuration manually. The script `/etc/nginx/certbot-hook.sh` is run after a certificate is installed or renewed.
 
+## Persistent volume
+
+You should create a docker volume for `/etc/letsencrypt`. That directory contains the retrieved certificates. The rate limit of letsencrypt only allows you to get a duplicate of the certificate up to 5 times a week. Without the volume it creates a new certificate each time that the container is rebuild.
+
 ## Running the Container
 You can run the container using the following command:
 
@@ -26,6 +30,7 @@ docker run -d \
   -e CERTBOT_EMAIL=your_email@example.com \
   -e DOMAIN_NAME=example.com \
   -p 80:80 -p 443:443 \
+  -v letsencrypt:/etc/letsencrypt \
   jasny/nginx-letsencrypt
 ```
 
@@ -36,7 +41,7 @@ This command runs the container, exposing both HTTP (port 80) and HTTPS (port 44
 You can use `nginx-letsencrypt` as base image for your custom docker image.
 
 ```
-FROM nginx-letsencrypt
+FROM jasny/nginx-letsencrypt
 
 COPY ./.docker/nginx.conf.template /etc/nginx/templates/default.conf.template
 # Rest of the Dockerfile...

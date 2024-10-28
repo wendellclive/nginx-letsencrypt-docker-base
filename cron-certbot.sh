@@ -32,6 +32,11 @@ if ! echo "$@" | grep -qE 'certonly|renew'; then
   DRYRUN_ARGS="certonly"
 fi
 
+# If we're not renewing the certificate reinstall nginx
+if ( ! echo "$@" | grep -q 'renew' ) && test -e /etc/letsencrypt/live/"$DOMAIN_NAME"; then
+  certbot install --nginx --cert-name "$DOMAIN_NAME" -n
+fi
+
 while :; do
   echo "Running certbot with --dry-run to simulate the certificate issuance..."
   certbot --nginx -d "$DOMAIN_NAME" --email "$CERTBOT_EMAIL" --agree-tos --non-interactive --keep-until-expiring $DRYRUN_ARGS "$@" --dry-run
