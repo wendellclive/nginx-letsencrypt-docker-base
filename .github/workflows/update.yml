@@ -25,14 +25,26 @@ jobs:
           DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.BASE_IMAGE }})
           if [ "$DIGEST" != "$(cat digest.txt 2>/dev/null)" ]; then
             echo "$DIGEST" > digest.txt
-            echo "updated=$1" >> $GITHUB_OUTPUT
+            echo "updated=true" >> $GITHUB_OUTPUT
           else
-            echo "echo 'updated=false"
+            echo "updated=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Extract Nginx version
+        if: steps.image_updated.outputs.updated == 'true'
+        id: nginx_version
+        run: |
+          NGINX_VERSION=$(docker inspect ${{ env.BASE_IMAGE }} | grep NGINX_VERSION | awk -F '=' '{print $2}' | tr -d '",')
+          echo "nginx_version=$NGINX_VERSION" >> $GITHUB_ENV
 
       - name: Checkout repository
         if: steps.image_updated.outputs.updated == 'true'
         uses: actions/checkout@v4
+
+      - name: Get commit hash
+        if: steps.image_updated.outputs.updated == 'true'
+        id: commit_hash
+        run: echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Login to Docker Hub
         if: steps.image_updated.outputs.updated == 'true'
@@ -46,5 +58,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest' >> $GITHUB_OUTPUT
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.nginx_version }}
+            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.nginx_version }}-${{ env.commit }}
 
