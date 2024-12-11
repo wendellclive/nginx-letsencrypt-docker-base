@@ -31,6 +31,9 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Pull latest base image
+        run: docker pull ${{ env.BASE_IMAGE }}
+
       - name: Extract Nginx version
         id: nginx_version
         run: |
