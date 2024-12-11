@@ -34,9 +34,11 @@ jobs:
         if: steps.image_updated.outputs.updated == 'true'
         id: nginx_version
         run: |
-          NGINX_VERSION=$(docker inspect ${{ env.BASE_IMAGE }} | grep NGINX_VERSION | awk -F '=' '{print $2}' | tr -d '",')
-          echo "nginx_version=$NGINX_VERSION" >> $GITHUB_ENV
-
+          FULL_VERSION=$(docker inspect ${{ env.BASE_IMAGE }} | grep NGINX_VERSION | awk -F '=' '{print $2}' | tr -d '",')
+          MAJOR_MINOR=$(echo "$FULL_VERSION" | awk -F '.' '{print $1"."$2}')
+          echo "full_version=$FULL_VERSION" >> $GITHUB_ENV
+          echo "minor_version=$MAJOR_MINOR" >> $GITHUB_ENV
+          
       - name: Checkout repository
         if: steps.image_updated.outputs.updated == 'true'
         uses: actions/checkout@v4
@@ -61,6 +63,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.nginx_version }}
-            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.nginx_version }}-${{ env.commit }}
+            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.minor_version }}
+            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.full_version }}
+            ${{ vars.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.full_version }}-${{ env.commit }}
 
