@@ -62,6 +62,6 @@ The Certbot script logs output to `/var/log/cron-certbot.log`. You can mount a v
 ## Contributions
 Feel free to [open issues](https://github.com/jasny/nginx-letsencrypt-docker/issues) or pull requests if you would like to contribute to this project.
 
-## Author
+## Forked from Author
 - [Arnold Daniels](https://jasny.net)
 
